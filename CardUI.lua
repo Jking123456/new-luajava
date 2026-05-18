@@ -19,7 +19,7 @@ local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
         drawable.setStroke(strokeWidth, Color.parseColor(strokeColor))
     end
     return drawable
-end
+    end
 
 local overlayType = 2003
 if Build.VERSION.SDK_INT >= 26 then
@@ -27,7 +27,7 @@ if Build.VERSION.SDK_INT >= 26 then
 end
 
 --------------------------------------------------
--- 1. SLEEK, COMPACT FLOATING BUTTON
+-- 1. FLOATING LOGO BUTTON (90x90 COMPACT)
 --------------------------------------------------
 local iconParams = WindowManager.LayoutParams()
 iconParams.type = overlayType
@@ -87,44 +87,42 @@ logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchList
 }))
 
 --------------------------------------------------
--- 2. MODERN REFINED PREMIUM CARD PANEL
+-- 2. RESIZED PREMIUM COMPACT UI CARD
 --------------------------------------------------
 local mainParams = WindowManager.LayoutParams()
 mainParams.type = overlayType
 mainParams.format = PixelFormat.RGBA_8888
 mainParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-mainParams.width = 680 
+mainParams.width = 650 -- Maintained clean card bounding layout
 mainParams.height = WindowManager.LayoutParams.WRAP_CONTENT
 mainParams.gravity = Gravity.CENTER
 
 local mainContainer = LinearLayout(context)
 _G.PRINZ_MAIN_CONTAINER = mainContainer
 mainContainer.setOrientation(LinearLayout.VERTICAL)
-mainContainer.setBackground(createShape("#11141A", 32, 2, "#1F2937")) 
-mainContainer.setPadding(40, 35, 40, 45)
+mainContainer.setBackground(createShape("#11141A", 28, 2, "#1F2937")) 
+mainContainer.setPadding(30, 25, 30, 30) -- Tightened paddings to stop the layout ballooning
 
 -- Header Bar Layout
 local headerBar = LinearLayout(context)
 headerBar.setOrientation(LinearLayout.HORIZONTAL)
 headerBar.setGravity(Gravity.CENTER_VERTICAL)
-headerBar.setPadding(0, 0, 0, 25)
 
 local titleText = TextView(context)
 titleText.setText("PRINZVAN CONSOLE V2.0")
 titleText.setTextColor(Color.parseColor("#00E5FF"))
-titleText.setTextSize(14)
+titleText.setTextSize(13)
 titleText.setTypeface(Typeface.DEFAULT_BOLD)
-titleText.setLetterSpacing(0.08) 
 local titleParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0)
 titleText.setLayoutParams(titleParams)
 headerBar.addView(titleText)
 
--- Minimize Button (— Style)
+-- Minimize Button Restructured (× Style)
 local closeButton = TextView(context)
-closeButton.setText("—")
+closeButton.setText("×")
 closeButton.setTextColor(Color.parseColor("#9CA3AF"))
-closeButton.setTextSize(16)
-closeButton.setPadding(15, 0, 15, 10)
+closeButton.setTextSize(22) -- Normalized sizing properties
+closeButton.setGravity(Gravity.CENTER)
 closeButton.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
     onClick = function(v)
         activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
@@ -138,13 +136,13 @@ closeButton.setOnClickListener(luajava.createProxy("android.view.View$OnClickLis
 headerBar.addView(closeButton)
 mainContainer.addView(headerBar)
 
--- Tab Area
+-- Compact Tab Menu Area
 local tabBar = LinearLayout(context)
 tabBar.setOrientation(LinearLayout.HORIZONTAL)
-tabBar.setPadding(0, 0, 0, 30)
+tabBar.setPadding(0, 20, 0, 20)
 mainContainer.addView(tabBar)
 
--- Dynamic Frame Canvas
+-- Dynamic Content Canvas Window
 local contentFrame = FrameLayout(context)
 mainContainer.addView(contentFrame)
 
@@ -167,22 +165,22 @@ local function switchTab(index)
         if i == index then
             pages[i].setVisibility(View.VISIBLE)
             tabButtons[i].setTextColor(Color.parseColor("#00E5FF"))
-            tabButtons[i].setBackground(createShape("#1F2937", 12, 1, "#00E5FF"))
+            tabButtons[i].setBackground(createShape("#1F2937", 10, 1, "#00E5FF"))
         else
             pages[i].setVisibility(View.GONE)
             tabButtons[i].setTextColor(Color.parseColor("#6B7280"))
-            tabButtons[i].setBackground(createShape("#11141A", 12, 0, nil))
+            tabButtons[i].setBackground(createShape("#11141A", 10, 0, nil))
         end
     end
 end
 
 local function addTab(title, index)
     local btn = Button(context)
-    local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0)
+    local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", 0, 75, 1.0) -- Enforced tight static button height
     btn.setLayoutParams(params)
     btn.setText(title)
-    btn.setTextSize(9)
-    btn.setPadding(0, 12, 0, 12)
+    btn.setTextSize(8.5)
+    btn.setPadding(0, 0, 0, 0)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) switchTab(index) end
     }))
@@ -194,28 +192,28 @@ local tabTitles = {"Shield", "Visuals", "Drone", "Prices", "System"}
 for i, title in ipairs(tabTitles) do addTab(title, i) end
 
 --------------------------------------------------
--- INTERFACE CONTENT UI CREATOR
+-- RENDER ELEMENTS GENERATOR
 --------------------------------------------------
 local function addPageText(page, text, color)
     local txt = TextView(context)
     txt.setText(text)
     txt.setTextColor(Color.parseColor(color or "#E5E7EB"))
-    txt.setPadding(0, 10, 0, 10)
-    txt.setTextSize(12)
+    txt.setPadding(0, 5, 0, 15)
+    txt.setTextSize(11)
     page.addView(txt)
 end
 
 local function addPageButton(page, text, callback)
-    -- Structural padding layout container instead of modifying layout margins
     local spaceContainer = LinearLayout(context)
-    spaceContainer.setPadding(0, 15, 0, 0)
+    spaceContainer.setPadding(0, 5, 0, 0)
     
     local btn = Button(context)
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#11141A"))
     btn.setTypeface(Typeface.DEFAULT_BOLD)
-    btn.setBackground(createShape("#00E5FF", 14, 0, nil)) 
-    btn.setPadding(0, 20, 0, 20)
+    btn.setTextSize(12)
+    btn.setBackground(createShape("#00E5FF", 12, 0, nil)) 
+    btn.setPadding(0, 15, 0, 15)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) callback() end
     }))
@@ -224,10 +222,10 @@ local function addPageButton(page, text, callback)
     page.addView(spaceContainer)
 end
 
--- Page Content Setup
+-- App Interfaces Data Mount
 addPageText(pages[1], "Authentication Verification Layer", "#9CA3AF")
 addPageButton(pages[1], "VERIFY ACTIVE SESSION TOKEN", function()
-    print("Session secure.")
+    print("Session active.")
 end)
 
 addPageText(pages[2], "Visual Framework Perception System", "#9CA3AF")
@@ -249,7 +247,7 @@ end)
 switchTab(1)
 
 --------------------------------------------------
--- RUNTIME LAYER DISPLAY
+-- WINDOW INITIALIZATION DISPLAY
 --------------------------------------------------
 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
     run = function()
@@ -260,7 +258,7 @@ activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
     end
 }))
 
--- KEEP-ALIVE DAEMON
+-- KEEP-ALIVE DAEMON LOOP
 while true do
     gg.sleep(100)
 end
