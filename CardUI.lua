@@ -9,7 +9,7 @@ import "android.graphics.*"
 local context = activity
 local windowManager = context.getSystemService("window")
 
--- Shape Generator with solid color and rounded corners
+-- Shape Generator for Professional UI Styling
 local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
     local drawable = GradientDrawable()
     drawable.setShape(GradientDrawable.RECTANGLE)
@@ -27,17 +27,17 @@ if Build.VERSION.SDK_INT >= 26 then
 end
 
 --------------------------------------------------
--- 1. COMPACT FLOATING LOGO BUTTON (90x90)
+-- 1. PREMIUM COMPACT FLOATING LOGO BUTTON
 --------------------------------------------------
 local iconParams = WindowManager.LayoutParams()
 iconParams.type = overlayType
 iconParams.format = PixelFormat.RGBA_8888
 iconParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-iconParams.width = 90  
-iconParams.height = 90 
+iconParams.width = 95  
+iconParams.height = 95 
 iconParams.gravity = Gravity.LEFT or Gravity.TOP
-iconParams.x = 100
-iconParams.y = 400
+iconParams.x = 80
+iconParams.y = 450
 
 local logoButton = Button(context)
 logoButton.setText("P")
@@ -47,13 +47,11 @@ logoButton.setTypeface(Typeface.DEFAULT_BOLD)
 
 local buttonShape = GradientDrawable()
 buttonShape.setShape(GradientDrawable.OVAL)
-buttonShape.setColor(Color.parseColor("#1A1A24"))
+buttonShape.setColor(Color.parseColor("#151821"))
 buttonShape.setStroke(3, Color.parseColor("#00E5FF"))
 logoButton.setBackground(buttonShape)
 
---------------------------------------------------
--- FLOATING BUTTON DRAG LOGIC
---------------------------------------------------
+-- Floating Touch/Drag Implementation
 local initialX, initialY, initialTouchX, initialTouchY
 logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchListener", {
     onTouch = function(view, event)
@@ -87,52 +85,49 @@ logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchList
 }))
 
 --------------------------------------------------
--- 2. FIXED COMPACT UI CARD (NO MORE SCREEN STRETCH)
+-- 2. HIGH-END ASYMMETRICAL DUAL-PANEL CONSOLE
 --------------------------------------------------
 local mainParams = WindowManager.LayoutParams()
 mainParams.type = overlayType
 mainParams.format = PixelFormat.RGBA_8888
 mainParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-mainParams.width = 660  -- Fixed strict width profile
-mainParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+mainParams.width = 720  -- Explicit strict layout boundary
+mainParams.height = 440 -- Forced structured height boundary
 mainParams.gravity = Gravity.CENTER
 
--- Using a base frame layout wrapper to force Android layout engines to wrap strictly
+-- Root wrapper to block screen leaks
 local rootWrapper = FrameLayout(context)
 _G.PRINZ_MAIN_CONTAINER = rootWrapper
 
-local mainContainer = LinearLayout(context)
-mainContainer.setOrientation(LinearLayout.VERTICAL)
-mainContainer.setBackground(createShape("#1A1A24", 28, 2, "#00E5FF"))
-mainContainer.setPadding(35, 30, 35, 35)
+-- Outer UI Framework Card Box
+local mainCard = LinearLayout(context)
+mainCard.setOrientation(LinearLayout.VERTICAL)
+mainCard.setBackground(createShape("#111319", 24, 2, "#1F2533"))
+mainCard.setPadding(25, 20, 25, 25)
+mainCard.setLayoutParams(FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+rootWrapper.addView(mainCard)
 
-local matchParent = LinearLayout.LayoutParams.MATCH_PARENT
-local wrapContent = LinearLayout.LayoutParams.WRAP_CONTENT
-mainContainer.setLayoutParams(FrameLayout.LayoutParams(matchParent, wrapContent))
-rootWrapper.addView(mainContainer)
-
---------------------------------------------------
--- HEADER BAR WITH RIGHT ALIGNED CORNER (×)
---------------------------------------------------
+-- Header Section: Brand Title & Sleek Close Cross Button
 local headerBar = LinearLayout(context)
 headerBar.setOrientation(LinearLayout.HORIZONTAL)
 headerBar.setGravity(Gravity.CENTER_VERTICAL)
+headerBar.setPadding(10, 0, 5, 15)
 
 local titleText = TextView(context)
-titleText.setText("Prinzvan System Config V2.0\nshielded Perception")
-titleText.setTextColor(Color.parseColor("#FFFFFF"))
-titleText.setTextSize(13)
+titleText.setText("PRINZVAN SYSTEM CONSOLE V2.0")
+titleText.setTextColor(Color.parseColor("#00E5FF"))
+titleText.setTextSize(11)
 titleText.setTypeface(Typeface.DEFAULT_BOLD)
-titleText.setGravity(Gravity.CENTER)
-local titleParams = LinearLayout.LayoutParams(0, wrapContent, 1.0)
+titleText.setLetterSpacing(0.05)
+local titleParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0)
 titleText.setLayoutParams(titleParams)
 headerBar.addView(titleText)
 
 local closeButton = TextView(context)
 closeButton.setText("×")
-closeButton.setTextColor(Color.parseColor("#FFFFFF"))
-closeButton.setTextSize(24)
-closeButton.setPadding(10, 0, 5, 5)
+closeButton.setTextColor(Color.parseColor("#9CA3AF"))
+closeButton.setTextSize(22)
+closeButton.setPadding(15, 0, 5, 5)
 closeButton.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
     onClick = function(v)
         activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
@@ -144,26 +139,32 @@ closeButton.setOnClickListener(luajava.createProxy("android.view.View$OnClickLis
     end
 }))
 headerBar.addView(closeButton)
-mainContainer.addView(headerBar)
+mainCard.addView(headerBar)
 
--- Compact Brand Title
-local brandText = TextView(context)
-brandText.setText("Prinzvan Modz")
-brandText.setTextColor(Color.parseColor("#FFFFFF"))
-brandText.setTextSize(19)
-brandText.setGravity(Gravity.CENTER)
-brandText.setPadding(0, 25, 0, 25)
-mainContainer.addView(brandText)
+-- Core Content Core: Asymmetrical Left Sidebar & Right View Screen
+local splitWorkspace = LinearLayout(context)
+splitWorkspace.setOrientation(LinearLayout.HORIZONTAL)
+local workspaceParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1.0)
+splitWorkspace.setLayoutParams(workspaceParams)
+mainCard.addView(splitWorkspace)
 
--- Navigation Tab Bar Layout
-local tabBar = LinearLayout(context)
-tabBar.setOrientation(LinearLayout.HORIZONTAL)
-tabBar.setPadding(0, 0, 0, 20)
-mainContainer.addView(tabBar)
+-- LEFT SIDEBAR NAVIGATION PANEL
+local leftNavMenu = LinearLayout(context)
+leftNavMenu.setOrientation(LinearLayout.VERTICAL)
+leftNavMenu.setBackground(createShape("#0A0C10", 16, 1, "#151922"))
+leftNavMenu.setPadding(12, 12, 12, 12)
+local leftParams = LinearLayout.LayoutParams(180, LinearLayout.LayoutParams.MATCH_PARENT)
+leftParams.rightMargin = 20
+leftNavMenu.setLayoutParams(leftParams)
+splitWorkspace.addView(leftNavMenu)
 
--- Dynamic Frame Container Window
-local contentFrame = FrameLayout(context)
-mainContainer.addView(contentFrame)
+-- RIGHT DISPLAY VIEW CANVAS SCREEN
+local rightContentScreen = FrameLayout(context)
+rightContentScreen.setBackground(createShape("#0E1117", 16, 1, "#1F2533"))
+rightContentScreen.setPadding(25, 25, 25, 25)
+local rightParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1.0)
+rightContentScreen.setLayoutParams(rightParams)
+splitWorkspace.addView(rightContentScreen)
 
 local pages = {}
 local tabButtons = {}
@@ -172,88 +173,97 @@ local function createPage()
     local page = LinearLayout(context)
     page.setOrientation(LinearLayout.VERTICAL)
     page.setVisibility(View.GONE)
-    page.setLayoutParams(LinearLayout.LayoutParams(matchParent, wrapContent))
-    contentFrame.addView(page)
+    page.setLayoutParams(FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+    rightContentScreen.addView(page)
     return page
 end
 
+-- Generate isolated multi-tab viewport layers
 for i = 1, 5 do pages[i] = createPage() end
 
+-- Tab Switching State Matrix Engine
 local function switchTab(index)
     for i = 1, #pages do
         if i == index then
             pages[i].setVisibility(View.VISIBLE)
-            tabButtons[i].setTextColor(Color.parseColor("#FFFFFF"))
-            tabButtons[i].setBackground(createShape("#2A2A3A", 10, 1, "#00E5FF"))
+            tabButtons[i].setTextColor(Color.parseColor("#00E5FF"))
+            tabButtons[i].setBackground(createShape("#14212D", 10, 1, "#00E5FF"))
         else
             pages[i].setVisibility(View.GONE)
-            tabButtons[i].setTextColor(Color.parseColor("#B0BEC5"))
-            tabButtons[i].setBackground(createShape("#1A1A24", 10, 0, nil))
+            tabButtons[i].setTextColor(Color.parseColor("#6B7280"))
+            tabButtons[i].setBackground(createShape("#0A0C10", 10, 0, nil))
         end
     end
 end
 
-local function addTab(title, index)
-    local btn = Button(context)
-    local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", 0, 75, 1.0) -- Low strict static height
-    btn.setLayoutParams(params)
-    btn.setText(title)
-    btn.setTextSize(8.5)
-    btn.setPadding(0, 0, 0, 0)
-    btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
+-- Left Sidebar Navigation Tab Button Constructor
+local function addVerticalTab(title, index)
+    local tabBtn = Button(context)
+    local params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 68) -- Static tight text button frames
+    if index > 1 then params.topMargin = 10 end
+    tabBtn.setLayoutParams(params)
+    tabBtn.setText(title)
+    tabBtn.setTextSize(9)
+    tabBtn.setTransformationMethod(nil) -- Stop capitalization bypass bugs
+    tabBtn.setPadding(0, 0, 0, 0)
+    tabBtn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) switchTab(index) end
     }))
-    tabBar.addView(btn)
-    tabButtons[index] = btn
+    leftNavMenu.addView(tabBtn)
+    tabButtons[index] = tabBtn
 end
 
 local tabTitles = {"Shield", "Visuals", "Drone", "Prices", "System"}
-for i, title in ipairs(tabTitles) do addTab(title, i) end
+for i, title in ipairs(tabTitles) do addVerticalTab(title, i) end
 
 --------------------------------------------------
--- CONTENT UI COMPONENT FACTORY
+-- RENDER ELEMENTS INTERFACE FACTORY
 --------------------------------------------------
 local function addPageText(page, text, color)
     local txt = TextView(context)
     txt.setText(text)
-    txt.setTextColor(Color.parseColor(color or "#FFFFFF"))
-    txt.setPadding(0, 5, 0, 15)
+    txt.setTextColor(Color.parseColor(color or "#E5E7EB"))
+    txt.setPadding(0, 2, 0, 10)
     txt.setTextSize(11)
     page.addView(txt)
 end
 
 local function addPageButton(page, text, callback)
-    local paddingView = LinearLayout(context)
-    paddingView.setPadding(0, 5, 0, 0)
+    local spaceContainer = LinearLayout(context)
+    spaceContainer.setPadding(0, 5, 0, 0)
     
     local btn = Button(context)
     btn.setText(text)
-    btn.setTextColor(Color.parseColor("#FFFFFF"))
+    btn.setTextColor(Color.parseColor("#11141A"))
     btn.setTypeface(Typeface.DEFAULT_BOLD)
-    btn.setTextSize(11)
-    btn.setBackground(createShape("#2A2A3A", 12, 1, "#00E5FF")) 
-    btn.setPadding(0, 15, 0, 15)
+    btn.setTextSize(10.5)
+    btn.setBackground(createShape("#00E5FF", 10, 0, nil)) 
+    btn.setPadding(0, 12, 0, 12)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) callback() end
     }))
     
-    paddingView.addView(btn, LinearLayout.LayoutParams(matchParent, wrapContent))
-    page.addView(paddingView)
+    spaceContainer.addView(btn, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+    page.addView(spaceContainer)
 end
 
--- Page Views Data Mappings
-addPageText(pages[1], "Status: Plan Verified [Free User]", "#00FF00")
-addPageButton(pages[1], "VERIFY ACTIVE CONFIGURATION TOKEN", function()
-    gg.toast("Verifying configuration...")
+-- Populate Custom Tab Contents
+addPageText(pages[1], "Authentication Verification Layer", "#00E5FF")
+addPageText(pages[1], "Status: Active Session Node Secure", "#9CA3AF")
+addPageButton(pages[1], "VERIFY ACTIVE SESSION TOKEN", function()
+    gg.toast("Session verification check completed.")
 end)
 
-addPageText(pages[2], "Visual Interface Perception Engine Active", "#FFFFFF")
-addPageText(pages[3], "Matrix Coordinates Tracking Panel", "#FFFFFF")
+addPageText(pages[2], "Visual Mapping Engine", "#00E5FF")
+addPageText(pages[2], "• Perceptual Map Environment Frame\n• High-Fidelity Geometry ESP", "#9CA3AF")
 
-addPageText(pages[4], "Premium Tiers Profile List", "#00E5FF")
-addPageText(pages[4], "• 03 Days Access VIP\n• 07 Days Access VIP\n• Lifetime Pass Base Pass", "#FFFFFF")
+addPageText(pages[3], "Matrix drone Configurations", "#00E5FF")
+addPageText(pages[3], "Current Height Aspect: 15 meters", "#9CA3AF")
 
-addPageText(pages[5], "UI Lifecycle Termination Matrix", "#B0BEC5")
+addPageText(pages[4], "Premium Store Tier Profiles", "#00E5FF")
+addPageText(pages[4], "• 03 Days Premium VIP Pass -> ₱45\n• 07 Days Premium VIP Pass -> ₱85\n• Lifetime Engine Pass Access -> ₱650", "#E5E7EB")
+
+addPageText(pages[5], "UI Window Lifecycle Matrix", "#9CA3AF")
 addPageButton(pages[5], "CLOSE UI WINDOW", function()
     activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
         run = function()
@@ -263,10 +273,11 @@ addPageButton(pages[5], "CLOSE UI WINDOW", function()
     }))
 end)
 
+-- Default to first screen layer
 switchTab(1)
 
 --------------------------------------------------
--- RENDER MOUNT DEPLOYMENT
+-- RENDER MOUNT INITIALIZATION RUNNER
 --------------------------------------------------
 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
     run = function()
