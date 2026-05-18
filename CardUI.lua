@@ -263,3 +263,8 @@ activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
         windowManager.addView(mainContainer, mainParams)
     end
 }))
+
+-- KEEP-ALIVE LOOP: Prevents ELGG from instantly killing the UI thread
+while true do
+    gg.sleep(100)
+end
