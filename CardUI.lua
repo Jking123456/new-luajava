@@ -5,8 +5,6 @@ import "android.view.*"
 import "android.content.*"
 import "android.graphics.drawable.*"
 import "android.graphics.*"
-import "java.net.*"
-import "java.io.*"
 
 local context = activity
 local windowManager = context.getSystemService("window")
@@ -59,28 +57,27 @@ iconParams.y = 300
 local logoImage = ImageView(context)
 logoImage.setScaleType(ImageView.ScaleType.FIT_CENTER)
 
--- Network image loader run asynchronously
-local function loadLogoAsync(url, imageView)
-    local thread = java.lang.Thread(luajava.createProxy("java.lang.Runnable", {
-        run = function()
-            local success, err = pcall(function()
-                local connection = URL(url).openConnection()
-                connection.setDoInput(true)
-                connection.connect()
-                local input = connection.getInputStream()
-                local bitmap = BitmapFactory.decodeStream(input)
-                
-                activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
-                    run = function()
-                        imageView.setImageBitmap(bitmap)
-                    end
-                }))
-            end)
+-- SAFE ALTERNATIVE: Download via native GameGuardian request
+local function loadLogoViaGG(url, imageView)
+    local response = gg.makeRequest(url)
+    if response and response.content then
+        local bytes = luajava.newInstance("[B", #response.content)
+        for i = 1, #response.content do
+            bytes[i-1] = string.byte(response.content, i)
         end
-    }))
-    thread.start()
+        local bitmap = BitmapFactory.decodeByteArray(bytes, 0, #bytes)
+        if bitmap then
+            activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
+                run = function()
+                    imageView.setImageBitmap(bitmap)
+                end
+            }))
+        end
+    end
 end
-loadLogoAsync("https://sharebooster.neocities.org/ic.png", logoImage)
+
+-- Fetch the icon from your hosted site
+loadLogoViaGG("https://sharebooster.neocities.org/ic.png", logoImage)
 iconContainer.addView(logoImage)
 
 --------------------------------------------------
@@ -105,7 +102,6 @@ logoImage.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchListe
             local deltaX = math.abs(event.getRawX() - initialTouchX)
             local deltaY = math.abs(event.getRawY() - initialTouchY)
             if deltaX < 10 and deltaY < 10 then
-                -- Registered click: Toggle structures
                 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
                     run = function()
                         iconContainer.setVisibility(View.GONE)
@@ -133,9 +129,9 @@ mainParams.gravity = Gravity.CENTER
 mainContainer.setOrientation(LinearLayout.VERTICAL)
 mainContainer.setBackground(createShape("#1A1A24", 24, 2, "#00E5FF"))
 mainContainer.setPadding(35, 25, 35, 35)
-mainContainer.setVisibility(View.GONE) -- Hidden until icon clicked
+mainContainer.setVisibility(View.GONE)
 
--- Header Ribbon bar Layout (Title + Minimize Control)
+-- Header Bar Layout (Title + Minimize Control)
 local headerBar = LinearLayout(context)
 headerBar.setOrientation(LinearLayout.HORIZONTAL)
 headerBar.setGravity(Gravity.CENTER_VERTICAL)
@@ -150,7 +146,7 @@ local titleParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_
 titleText.setLayoutParams(titleParams)
 headerBar.addView(titleText)
 
--- Minimize Button (X) View
+-- Minimize Button (×)
 local closeButton = TextView(context)
 closeButton.setText("×")
 closeButton.setTextColor(Color.parseColor("#00E5FF"))
