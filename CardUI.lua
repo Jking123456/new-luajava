@@ -5,23 +5,10 @@ import "android.view.*"
 import "android.content.*"
 import "android.graphics.drawable.*"
 import "android.graphics.*"
+import "java.net.URL"
 
 local context = activity
 local windowManager = context.getSystemService("window")
-
--- Global state variables
-local isMenuVisible = false
-local scanned = false
-local V1, V2, V3, V4, V5 = {}, {}, {}, {}, {}
-
--- Layout Parameters Helper
-local function getOverlayType()
-    if Build.VERSION.SDK_INT >= 26 then
-        return 2038 -- TYPE_APPLICATION_OVERLAY
-    else
-        return 2003 -- TYPE_PHONE
-    end
-end
 
 -- Shape Generator for Borders & Backgrounds
 local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
@@ -42,10 +29,14 @@ local iconContainer = LinearLayout(context)
 local mainContainer = LinearLayout(context)
 
 --------------------------------------------------
--- 1. FLOATING LOGO SETUP
+-- 1. FLOATING LOGO SETUP (NATIVE ASYNCTASK)
 --------------------------------------------------
 local iconParams = WindowManager.LayoutParams()
-iconParams.type = getOverlayType()
+if Build.VERSION.SDK_INT >= 26 then
+    iconParams.type = 2038
+else
+    iconParams.type = 2003
+end
 iconParams.format = PixelFormat.RGBA_8888
 iconParams.flags = 8 or 32
 iconParams.width = 140
@@ -57,27 +48,31 @@ iconParams.y = 300
 local logoImage = ImageView(context)
 logoImage.setScaleType(ImageView.ScaleType.FIT_CENTER)
 
--- SAFE ALTERNATIVE: Download via native GameGuardian request
-local function loadLogoViaGG(url, imageView)
-    local response = gg.makeRequest(url)
-    if response and response.content then
-        local bytes = luajava.newInstance("[B", #response.content)
-        for i = 1, #response.content do
-            bytes[i-1] = string.byte(response.content, i)
+-- Safe native downloader completely bypassing java.lang.Thread limitations
+local function loadLogoNatively(imgUrl, imageView)
+    local task = luajava.createProxy("android.os.AsyncTask", {
+        doInBackground = function(params)
+            local success, result = pcall(function()
+                local url = luajava.newInstance("java.net.URL", imgUrl)
+                local connection = url.openConnection()
+                connection.setDoInput(true)
+                connection.connect()
+                local input = connection.getInputStream()
+                return BitmapFactory.decodeStream(input)
+            end)
+            if success then return result end
+            return nil
+        end,
+        onPostExecute = function(bitmap)
+            if bitmap then
+                imageView.setImageBitmap(bitmap)
+            end
         end
-        local bitmap = BitmapFactory.decodeByteArray(bytes, 0, #bytes)
-        if bitmap then
-            activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
-                run = function()
-                    imageView.setImageBitmap(bitmap)
-                end
-            }))
-        end
-    end
+    })
+    task.execute(luajava.newInstance("[Ljava.lang.String;", {}))
 end
 
--- Fetch the icon from your hosted site
-loadLogoViaGG("https://sharebooster.neocities.org/ic.png", logoImage)
+loadLogoNatively("https://sharebooster.neocities.org/ic.png", logoImage)
 iconContainer.addView(logoImage)
 
 --------------------------------------------------
@@ -116,10 +111,14 @@ logoImage.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchListe
 }))
 
 --------------------------------------------------
--- 2. MAIN PREMIUM CARD CANVAS
+-- 2. MAIN CARD CANVAS
 --------------------------------------------------
 local mainParams = WindowManager.LayoutParams()
-mainParams.type = getOverlayType()
+if Build.VERSION.SDK_INT >= 26 then
+    mainParams.type = 2038
+else
+    mainParams.type = 2003
+end
 mainParams.format = PixelFormat.RGBA_8888
 mainParams.flags = 8 or 32
 mainParams.width = WindowManager.LayoutParams.WRAP_CONTENT
@@ -131,7 +130,7 @@ mainContainer.setBackground(createShape("#1A1A24", 24, 2, "#00E5FF"))
 mainContainer.setPadding(35, 25, 35, 35)
 mainContainer.setVisibility(View.GONE)
 
--- Header Bar Layout (Title + Minimize Control)
+-- Header Bar Layout
 local headerBar = LinearLayout(context)
 headerBar.setOrientation(LinearLayout.HORIZONTAL)
 headerBar.setGravity(Gravity.CENTER_VERTICAL)
@@ -248,16 +247,14 @@ end
 addPageText(pages[1], "Status: Plan Verified [Free User]", "#00FF00")
 addPageText(pages[1], "License Verification", "#00E5FF")
 addPageButton(pages[1], "VERIFY ACTIVE CONFIGURATION TOKEN", function()
-    gg.toast("Verification layer acknowledged.")
+    print("Verification layer acknowledged.")
 end)
 
 -- Page 2 Setup (Visuals)
 addPageText(pages[2], "Perception Overlays", "#00E5FF")
-addPageButton(pages[2], "Bypass Protection System", function() gg.toast("Bypass initialized.") end)
 
 -- Page 3 Setup (Drone)
 addPageText(pages[3], "Matrix Coordinates Console", "#00E5FF")
-addPageButton(pages[3], "Scan Camera Engine", function() gg.toast("Scanning elements...") end)
 
 -- Page 4 Setup (Prices)
 addPageText(pages[4], "Premium Tiers Info", "#00E5FF")
