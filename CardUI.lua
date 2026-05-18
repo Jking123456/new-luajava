@@ -206,13 +206,11 @@ local function addPageText(page, text, color)
 end
 
 local function addPageButton(page, text, callback)
+    -- Structural padding layout container instead of modifying layout margins
+    local spaceContainer = LinearLayout(context)
+    spaceContainer.setPadding(0, 15, 0, 0)
+    
     local btn = Button(context)
-    
-    -- Safe setup: Use constructor-defined parameters instead of using target functions
-    local btnParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-    btnParams.topMargin = 15 -- Setting raw values prevents bridge crashes
-    btn.setLayoutParams(btnParams)
-    
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#11141A"))
     btn.setTypeface(Typeface.DEFAULT_BOLD)
@@ -221,7 +219,9 @@ local function addPageButton(page, text, callback)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) callback() end
     }))
-    page.addView(btn)
+    
+    spaceContainer.addView(btn, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+    page.addView(spaceContainer)
 end
 
 -- Page Content Setup
