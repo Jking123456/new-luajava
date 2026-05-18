@@ -9,9 +9,9 @@ import "android.graphics.*"
 local context = activity
 local windowManager = context.getSystemService("window")
 
--- Shape Generator for Borders & Backgrounds
-local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
-    local drawable = luajava.newInstance("android.graphics.drawable.GradientDrawable")
+-- Simple Shape Generator for the Main Panel
+local function createPanelShape(solidColor, cornerRadius, strokeWidth, strokeColor)
+    local drawable = GradientDrawable()
     drawable.setShape(GradientDrawable.RECTANGLE)
     drawable.setColor(Color.parseColor(solidColor))
     drawable.setCornerRadius(cornerRadius)
@@ -21,42 +21,41 @@ local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
     return drawable
 end
 
---------------------------------------------------
--- INITIALIZE CONTAINERS
---------------------------------------------------
-local iconContainer = LinearLayout(context)
-local mainContainer = LinearLayout(context)
+-- Proper Layout Parameters depending on Android OS level
+local overlayType = 2003
+if Build.VERSION.SDK_INT >= 26 then
+    overlayType = 2038
+end
 
 --------------------------------------------------
--- 1. FLOATING LOGO SETUP (ZERO-NETWORK SYSTEM)
+-- 1. STABLE NATIVE FLOATING BUTTON SYSTEM
 --------------------------------------------------
 local iconParams = WindowManager.LayoutParams()
-if Build.VERSION.SDK_INT >= 26 then
-    iconParams.type = 2038
-else
-    iconParams.type = 2003
-end
+iconParams.type = overlayType
 iconParams.format = PixelFormat.RGBA_8888
-iconParams.flags = 8 or 32
-iconParams.width = 120
-iconParams.height = 120
+iconParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+iconParams.width = 130
+iconParams.height = 130
 iconParams.gravity = Gravity.LEFT or Gravity.TOP
-iconParams.x = 100
-iconParams.y = 300
+iconParams.x = 150
+iconParams.y = 400
 
--- Create a clean glowing button design instead of an unstable web image loader
-local logoButton = TextView(context)
-logoButton.setGravity(Gravity.CENTER)
+-- Using a strict native Button component which is completely safe from crashing
+local logoButton = Button(context)
 logoButton.setText("P")
 logoButton.setTextColor(Color.parseColor("#00E5FF"))
-logoButton.setTextSize(20)
+logoButton.setTextSize(18)
 logoButton.setTypeface(Typeface.DEFAULT_BOLD)
-logoButton.setBackground(createShape("#1A1A24", 60, 3, "#00E5FF"))
 
-iconContainer.addView(logoButton)
+-- Simple background setting that will not crash
+local stateDim = GradientDrawable()
+stateDim.setShape(GradientDrawable.OVAL)
+stateDim.setColor(Color.parseColor("#1A1A24"))
+stateDim.setStroke(4, Color.parseColor("#00E5FF"))
+logoButton.setBackground(stateDim)
 
 --------------------------------------------------
--- DRAG LOGIC FOR FLOATING ICON
+-- NATIVE DRAG AND DROP HANDLER
 --------------------------------------------------
 local initialX, initialY, initialTouchX, initialTouchY
 logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchListener", {
@@ -71,16 +70,17 @@ logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchList
         elseif action == MotionEvent.ACTION_MOVE then
             iconParams.x = initialX + math.floor(event.getRawX() - initialTouchX)
             iconParams.y = initialY + math.floor(event.getRawY() - initialTouchY)
-            windowManager.updateViewLayout(iconContainer, iconParams)
+            windowManager.updateViewLayout(logoButton, iconParams)
             return true
         elseif action == MotionEvent.ACTION_UP then
             local deltaX = math.abs(event.getRawX() - initialTouchX)
             local deltaY = math.abs(event.getRawY() - initialTouchY)
-            if deltaX < 10 and deltaY < 10 then
+            if deltaX < 15 and deltaY < 15 then
+                -- UI Sync: Switch visibility modes safely
                 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
                     run = function()
-                        iconContainer.setVisibility(View.GONE)
-                        mainContainer.setVisibility(View.VISIBLE)
+                        logoButton.setVisibility(View.GONE)
+                        _G.PRINZ_MAIN_CONTAINER.setVisibility(View.VISIBLE)
                     end
                 }))
             end
@@ -91,26 +91,23 @@ logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchList
 }))
 
 --------------------------------------------------
--- 2. MAIN CARD CANVAS
+-- 2. MAIN MODAL PANEL CANVAS
 --------------------------------------------------
 local mainParams = WindowManager.LayoutParams()
-if Build.VERSION.SDK_INT >= 26 then
-    mainParams.type = 2038
-else
-    mainParams.type = 2003
-end
+mainParams.type = overlayType
 mainParams.format = PixelFormat.RGBA_8888
-mainParams.flags = 8 or 32
+mainParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
 mainParams.width = WindowManager.LayoutParams.WRAP_CONTENT
 mainParams.height = WindowManager.LayoutParams.WRAP_CONTENT
 mainParams.gravity = Gravity.CENTER
 
+local mainContainer = LinearLayout(context)
+_G.PRINZ_MAIN_CONTAINER = mainContainer -- Put into global environment state to prevent loss
 mainContainer.setOrientation(LinearLayout.VERTICAL)
-mainContainer.setBackground(createShape("#1A1A24", 24, 2, "#00E5FF"))
+mainContainer.setBackground(createPanelShape("#1A1A24", 24, 2, "#00E5FF"))
 mainContainer.setPadding(35, 25, 35, 35)
-mainContainer.setVisibility(View.GONE)
 
--- Header Bar Layout
+-- Header Layout (Title block + Minimize dynamic interactive text element)
 local headerBar = LinearLayout(context)
 headerBar.setOrientation(LinearLayout.HORIZONTAL)
 headerBar.setGravity(Gravity.CENTER_VERTICAL)
@@ -125,18 +122,18 @@ local titleParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_
 titleText.setLayoutParams(titleParams)
 headerBar.addView(titleText)
 
--- Minimize Button (×)
+-- Clean Minimize Action Trigger (×)
 local closeButton = TextView(context)
 closeButton.setText("×")
 closeButton.setTextColor(Color.parseColor("#00E5FF"))
-closeButton.setTextSize(26)
-closeButton.setPadding(15, 0, 5, 10)
+closeButton.setTextSize(32)
+closeButton.setPadding(20, 0, 10, 10)
 closeButton.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
     onClick = function(v)
         activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
             run = function()
-                mainContainer.setVisibility(View.GONE)
-                iconContainer.setVisibility(View.VISIBLE)
+                _G.PRINZ_MAIN_CONTAINER.setVisibility(View.GONE)
+                logoButton.setVisibility(View.VISIBLE)
             end
         }))
     end
@@ -173,11 +170,11 @@ local function switchTab(index)
         if i == index then
             pages[i].setVisibility(View.VISIBLE)
             tabButtons[i].setTextColor(Color.parseColor("#00E5FF"))
-            tabButtons[i].setBackground(createShape("#2A2A3A", 8, 1, "#00E5FF"))
+            tabButtons[i].setBackground(createPanelShape("#2A2A3A", 8, 1, "#00E5FF"))
         else
             pages[i].setVisibility(View.GONE)
             tabButtons[i].setTextColor(Color.parseColor("#B0BEC5"))
-            tabButtons[i].setBackground(createShape("#1A1A24", 8, 0, nil))
+            tabButtons[i].setBackground(createPanelShape("#1A1A24", 8, 0, nil))
         end
     end
 end
@@ -215,7 +212,7 @@ local function addPageButton(page, text, callback)
     btn.setLayoutParams(LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#FFFFFF"))
-    btn.setBackground(createShape("#2A2A3A", 12, 1, "#00E5FF"))
+    btn.setBackground(createPanelShape("#2A2A3A", 12, 1, "#00E5FF"))
     btn.setPadding(0, 18, 0, 18)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) callback() end
@@ -227,7 +224,7 @@ end
 addPageText(pages[1], "Status: Plan Verified [Free User]", "#00FF00")
 addPageText(pages[1], "License Verification", "#00E5FF")
 addPageButton(pages[1], "VERIFY ACTIVE CONFIGURATION TOKEN", function()
-    print("Verification layer acknowledged.")
+    print("Verification Layer Activated.")
 end)
 
 -- Page 2 Setup (Visuals)
@@ -245,9 +242,8 @@ addPageText(pages[5], "UI Lifecycle Properties", "#B0BEC5")
 addPageButton(pages[5], "EXIT RUNTIME ENVIRONMENT", function()
     activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
         run = function()
-            windowManager.removeView(mainContainer)
-            windowManager.removeView(iconContainer)
-            print("UI Thread Terminated.")
+            windowManager.removeView(_G.PRINZ_MAIN_CONTAINER)
+            windowManager.removeView(logoButton)
         end
     }))
 end)
@@ -255,16 +251,19 @@ end)
 switchTab(1)
 
 --------------------------------------------------
--- RENDERING LAYER EXECUTION
+-- INITIAL INITIALIZATION
 --------------------------------------------------
 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
     run = function()
-        windowManager.addView(iconContainer, iconParams)
-        windowManager.addView(mainContainer, mainParams)
+        -- Start with the Main panel open so you know it loads, click × to test the floating button!
+        windowManager.addView(logoButton, iconParams)
+        logoButton.setVisibility(View.GONE)
+        
+        windowManager.addView(_G.PRINZ_MAIN_CONTAINER, mainParams)
     end
 }))
 
--- KEEP-ALIVE LOOP: Prevents ELGG from instantly killing the UI thread
+-- KEEP-ALIVE DAEMON
 while true do
     gg.sleep(100)
 end
