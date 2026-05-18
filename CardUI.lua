@@ -33,8 +33,8 @@ local iconParams = WindowManager.LayoutParams()
 iconParams.type = overlayType
 iconParams.format = PixelFormat.RGBA_8888
 iconParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-iconParams.width = 90  -- Reduced from 130 for a clean, compact profile
-iconParams.height = 90 -- Reduced from 130
+iconParams.width = 90  
+iconParams.height = 90 
 iconParams.gravity = Gravity.LEFT or Gravity.TOP
 iconParams.x = 100
 iconParams.y = 400
@@ -93,14 +93,14 @@ local mainParams = WindowManager.LayoutParams()
 mainParams.type = overlayType
 mainParams.format = PixelFormat.RGBA_8888
 mainParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-mainParams.width = 680 -- Fixed proportional width to keep it looking like an elegant card
+mainParams.width = 680 
 mainParams.height = WindowManager.LayoutParams.WRAP_CONTENT
 mainParams.gravity = Gravity.CENTER
 
 local mainContainer = LinearLayout(context)
 _G.PRINZ_MAIN_CONTAINER = mainContainer
 mainContainer.setOrientation(LinearLayout.VERTICAL)
-mainContainer.setBackground(createShape("#11141A", 32, 2, "#1F2937")) -- Slate tint blend border
+mainContainer.setBackground(createShape("#11141A", 32, 2, "#1F2937")) 
 mainContainer.setPadding(40, 35, 40, 45)
 
 -- Header Bar Layout
@@ -114,7 +114,7 @@ titleText.setText("PRINZVAN CONSOLE V2.0")
 titleText.setTextColor(Color.parseColor("#00E5FF"))
 titleText.setTextSize(14)
 titleText.setTypeface(Typeface.DEFAULT_BOLD)
-titleText.setLetterSpacing(0.08) -- Clean spacing for UI identity
+titleText.setLetterSpacing(0.08) 
 local titleParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0)
 titleText.setLayoutParams(titleParams)
 headerBar.addView(titleText)
@@ -207,13 +207,16 @@ end
 
 local function addPageButton(page, text, callback)
     local btn = Button(context)
+    
+    -- Safe setup: Use constructor-defined parameters instead of using target functions
     local btnParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-    btnParams.setMargins(0, 15, 0, 0)
+    btnParams.topMargin = 15 -- Setting raw values prevents bridge crashes
     btn.setLayoutParams(btnParams)
+    
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#11141A"))
     btn.setTypeface(Typeface.DEFAULT_BOLD)
-    btn.setBackground(createShape("#00E5FF", 14, 0, nil)) -- Smooth cyan solid accent action button
+    btn.setBackground(createShape("#00E5FF", 14, 0, nil)) 
     btn.setPadding(0, 20, 0, 20)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) callback() end
@@ -251,7 +254,7 @@ switchTab(1)
 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
     run = function()
         windowManager.addView(logoButton, iconParams)
-        logoButton.setVisibility(View.GONE) -- Main canvas starts open cleanly
+        logoButton.setVisibility(View.GONE) 
         
         windowManager.addView(_G.PRINZ_MAIN_CONTAINER, mainParams)
     end
