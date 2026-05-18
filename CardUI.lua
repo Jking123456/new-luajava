@@ -28,7 +28,7 @@ local iconContainer = LinearLayout(context)
 local mainContainer = LinearLayout(context)
 
 --------------------------------------------------
--- 1. FLOATING LOGO SETUP (LOCAL STORAGE METHOD)
+-- 1. FLOATING LOGO SETUP (ZERO-NETWORK SYSTEM)
 --------------------------------------------------
 local iconParams = WindowManager.LayoutParams()
 if Build.VERSION.SDK_INT >= 26 then
@@ -38,49 +38,28 @@ else
 end
 iconParams.format = PixelFormat.RGBA_8888
 iconParams.flags = 8 or 32
-iconParams.width = 140
-iconParams.height = 140
+iconParams.width = 120
+iconParams.height = 120
 iconParams.gravity = Gravity.LEFT or Gravity.TOP
 iconParams.x = 100
 iconParams.y = 300
 
-local logoImage = ImageView(context)
-logoImage.setScaleType(ImageView.ScaleType.FIT_CENTER)
+-- Create a clean glowing button design instead of an unstable web image loader
+local logoButton = TextView(context)
+logoButton.setGravity(Gravity.CENTER)
+logoButton.setText("P")
+logoButton.setTextColor(Color.parseColor("#00E5FF"))
+logoButton.setTextSize(20)
+logoButton.setTypeface(Typeface.DEFAULT_BOLD)
+logoButton.setBackground(createShape("#1A1A24", 60, 3, "#00E5FF"))
 
--- Clean Download Layer using GameGuardian native IO file systems
-local localIconPath = "/sdcard/Download/prinzvan_ic.png"
-local fileTest = io.open(localIconPath, "r")
-
-if fileTest then
-    fileTest:close()
-else
-    -- File doesn't exist yet, fetch it cleanly through GG core web system
-    local response = gg.makeRequest("https://sharebooster.neocities.org/ic.png")
-    if response and response.content then
-        local output = io.open(localIconPath, "wb")
-        if output then
-            output:write(response.content)
-            output:close()
-        end
-    end
-end
-
--- Render the downloaded file locally without complex Java object arrays
-local localBitmap = BitmapFactory.decodeFile(localIconPath)
-if localBitmap then
-    logoImage.setImageBitmap(localBitmap)
-else
-    -- Fallback safety style: Colored circle if file permission is restricted
-    logoImage.setBackground(createShape("#00E5FF", 70, 0, nil))
-end
-
-iconContainer.addView(logoImage)
+iconContainer.addView(logoButton)
 
 --------------------------------------------------
 -- DRAG LOGIC FOR FLOATING ICON
 --------------------------------------------------
 local initialX, initialY, initialTouchX, initialTouchY
-logoImage.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchListener", {
+logoButton.setOnTouchListener(luajava.createProxy("android.view.View$OnTouchListener", {
     onTouch = function(view, event)
         local action = event.getAction()
         if action == MotionEvent.ACTION_DOWN then
