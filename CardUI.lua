@@ -1,5 +1,5 @@
 -- MyCustomCardUI.lua
--- This file will be hosted online on GitHub, Pastebin, or Gitee.
+-- Host this updated file online on GitHub, Pastebin, or Gitee.
 
 import "android.app.*"
 import "android.os.*"
@@ -20,12 +20,11 @@ else
 end
 
 layoutParams.format = PixelFormat.RGBA_8888
-layoutParams.flags = 8 or 32 -- FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCH_MODAL
+layoutParams.flags = 8 or 32 
 layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT
 layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
 layoutParams.gravity = Gravity.CENTER
 
--- Generates our premium card background programmatically
 local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
     local drawable = luajava.newInstance("android.graphics.drawable.GradientDrawable")
     drawable.setShape(GradientDrawable.RECTANGLE)
@@ -37,13 +36,11 @@ local function createShape(solidColor, cornerRadius, strokeWidth, strokeColor)
     return drawable
 end
 
--- Main Cyber-Dark Window Container
 local mainLayout = LinearLayout(context)
 mainLayout.setOrientation(LinearLayout.VERTICAL)
-mainLayout.setBackground(createShape("#1A1A24", 24, 2, "#00E5FF")) -- Neon Cyan Border
+mainLayout.setBackground(createShape("#1A1A24", 24, 2, "#00E5FF")) 
 mainLayout.setPadding(40, 40, 40, 40)
 
--- Header Element
 local headerText = TextView(context)
 headerText.setText("PRINZVAN SYSTEM CONFIG")
 headerText.setTextColor(Color.parseColor("#00E5FF"))
@@ -52,7 +49,6 @@ headerText.setGravity(Gravity.CENTER)
 headerText.setPadding(0, 10, 0, 20)
 mainLayout.addView(headerText)
 
--- Decorative Divider Line
 local separator = View(context)
 local sepParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2)
 separator.setLayoutParams(sepParams)
@@ -62,8 +58,17 @@ mainLayout.addView(separator)
 -- Native Component Creator: Buttons
 local function addButton(text, onClickFunction)
     local btn = Button(context)
-    local params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-    params.setMargins(0, 15, 0, 15)
+    -- FIXED: Use explicit width, height values to avoid instantiation gaps
+    local w = LinearLayout.LayoutParams.MATCH_PARENT
+    local h = LinearLayout.LayoutParams.WRAP_CONTENT
+    local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", w, h)
+    
+    -- FIXED: Replaced call style with clear direct table margin assignments 
+    params.leftMargin = 0
+    params.topMargin = 15
+    params.rightMargin = 0
+    params.bottomMargin = 15
+    
     btn.setLayoutParams(params)
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#FFFFFF"))
@@ -87,7 +92,10 @@ local function addSwitch(text, onToggleFunction)
     txt.setText(text)
     txt.setTextColor(Color.parseColor("#B0BEC5"))
     txt.setTextSize(14)
-    local txtParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0)
+    
+    local w = 0
+    local h = LinearLayout.LayoutParams.WRAP_CONTENT
+    local txtParams = luajava.newInstance("android.widget.LinearLayout$LayoutParams", w, h, 1.0)
     txt.setLayoutParams(txtParams)
     
     local sw = Switch(context)
@@ -102,7 +110,7 @@ local function addSwitch(text, onToggleFunction)
     mainLayout.addView(row)
 end
 
--- Add Your Interactive Layout Controls
+-- Layout Controls
 addSwitch("Configuration Status Layer", function(isChecked)
     gg.toast("Configuration framework changed: " .. tostring(isChecked))
 end)
@@ -124,7 +132,7 @@ addButton("CLOSE UI WINDOW", function()
     }))
 end)
 
--- Render the floating interface safely on the Android UI Thread
+-- Render on Main Thread
 activity.runOnUiThread(luajava.createProxy("java.lang.Runnable", {
     run = function()
         windowManager.addView(mainLayout, layoutParams)
