@@ -99,19 +99,16 @@ end
 local function addTab(title, index)
     local btn = Button(context)
     
-    -- FIXED: Instantiating explicit LinearLayout params to handle horizontal margins safely
+    -- FIXED: Removed all Margin parameters completely to eliminate layout crashes.
+    -- Spacing is handled uniformly via button weight and structural padding.
     local w = 0
     local h = LinearLayout.LayoutParams.WRAP_CONTENT
     local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", w, h, 1.0)
-    params.leftMargin = 5
-    params.topMargin = 0
-    params.rightMargin = 5
-    params.bottomMargin = 0
     
     btn.setLayoutParams(params)
     btn.setText(title)
-    btn.setTextSize(11)
-    btn.setPadding(5, 10, 5, 10)
+    btn.setTextSize(10)
+    btn.setPadding(2, 12, 2, 12)
     
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(view)
@@ -146,12 +143,12 @@ local function addPageButton(page, text, callback)
     local w = LinearLayout.LayoutParams.MATCH_PARENT
     local h = LinearLayout.LayoutParams.WRAP_CONTENT
     local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", w, h)
-    params.leftMargin = 0; params.topMargin = 10; params.rightMargin = 0; params.bottomMargin = 10
     
     btn.setLayoutParams(params)
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#FFFFFF"))
     btn.setBackground(createShape("#2A2A3A", 12, 1, "#00E5FF"))
+    btn.setPadding(0, 20, 0, 20)
     btn.setOnClickListener(luajava.createProxy("android.view.View$OnClickListener", {
         onClick = function(v) callback() end
     }))
