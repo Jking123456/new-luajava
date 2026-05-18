@@ -18,7 +18,7 @@ else
 end
 
 layoutParams.format = PixelFormat.RGBA_8888
-layoutParams.flags = 8 or 32 -- FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCH_MODAL
+layoutParams.flags = 8 or 32 
 layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT
 layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
 layoutParams.gravity = Gravity.CENTER
@@ -57,7 +57,7 @@ tabBar.setGravity(Gravity.CENTER)
 tabBar.setPadding(0, 0, 0, 20)
 mainContainer.addView(tabBar)
 
--- Content Frame Container (Holds the individual pages)
+-- Content Frame Container
 local contentFrame = FrameLayout(context)
 mainContainer.addView(contentFrame)
 
@@ -68,7 +68,7 @@ local tabButtons = {}
 local function createPage()
     local page = LinearLayout(context)
     page.setOrientation(LinearLayout.VERTICAL)
-    page.setVisibility(View.GONE) -- Hidden by default
+    page.setVisibility(View.GONE) 
     local match = LinearLayout.LayoutParams.MATCH_PARENT
     local wrap = LinearLayout.LayoutParams.WRAP_CONTENT
     page.setLayoutParams(LinearLayout.LayoutParams(match, wrap))
@@ -81,7 +81,7 @@ for i = 1, 5 do
     pages[i] = createPage()
 end
 
--- Function to handle tab switching visual feedback and visibility
+-- Function to handle tab switching
 local function switchTab(index)
     for i = 1, #pages do
         if i == index then
@@ -98,8 +98,16 @@ end
 
 local function addTab(title, index)
     local btn = Button(context)
-    local params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0)
-    params.setMargins(5, 0, 5, 0)
+    
+    -- FIXED: Instantiating explicit LinearLayout params to handle horizontal margins safely
+    local w = 0
+    local h = LinearLayout.LayoutParams.WRAP_CONTENT
+    local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", w, h, 1.0)
+    params.leftMargin = 5
+    params.topMargin = 0
+    params.rightMargin = 5
+    params.bottomMargin = 0
+    
     btn.setLayoutParams(params)
     btn.setText(title)
     btn.setTextSize(11)
@@ -122,10 +130,9 @@ for i, title in ipairs(tabTitles) do
 end
 
 --------------------------------------------------
--- POPULATING THE PAGES WITH UTILITY VIEW ELEMENTS
+-- POPULATING THE PAGES WITH UI ELEMENTS
 --------------------------------------------------
 
--- Generic Component Adders
 local function addPageText(page, text, color)
     local txt = TextView(context)
     txt.setText(text)
@@ -136,8 +143,11 @@ end
 
 local function addPageButton(page, text, callback)
     local btn = Button(context)
-    local params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-    params.setMargins(0, 10, 0, 10)
+    local w = LinearLayout.LayoutParams.MATCH_PARENT
+    local h = LinearLayout.LayoutParams.WRAP_CONTENT
+    local params = luajava.newInstance("android.widget.LinearLayout$LayoutParams", w, h)
+    params.leftMargin = 0; params.topMargin = 10; params.rightMargin = 0; params.bottomMargin = 10
+    
     btn.setLayoutParams(params)
     btn.setText(text)
     btn.setTextColor(Color.parseColor("#FFFFFF"))
@@ -174,7 +184,7 @@ addPageButton(pages[5], "Minimize UI Overlay", function()
     }))
 end)
 
--- Set default initial active tab view
+-- Set initial default active tab view
 switchTab(1)
 
 -- Display on Window Layer Safely
