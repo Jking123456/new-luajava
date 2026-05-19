@@ -1,0 +1,10 @@
+{
+  "name": "free-keygenator",
+  "version": "1.0.0",
+  "description": "Automated key generator proxy for Vercel",
+  "main": "api/generate.js",
+  "scripts": {
+    "start": "node api/generate.js"
+  }
+}
+
