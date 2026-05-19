@@ -8,7 +8,7 @@ export default async function handler(request, response) {
   const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvcmFudGtnaGdjd2F3ZndscGxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5NDM2NDEsImV4cCI6MjA5MjUxOTY0MX0.HzQO-zOjT-ZTbOKlWTIp8cTS5xqVfEqew9CpMKKgQzs";
 
   // Generate a random string to simulate a unique device ID for each run
-  const uniqueId = 'fuckyou-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const uniqueId = 'Hacker-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
   try {
     const res = await fetch(supabaseUrl, {
